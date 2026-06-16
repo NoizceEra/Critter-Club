@@ -2,9 +2,10 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { Button } from "./button";
 import { Sheet, SheetContent, SheetTrigger } from "./sheet";
-import { Sparkles, Store, LogOut, User, Users, Trophy, MessageCircle, Swords, Menu, Settings, Moon, Sun, Zap, ShoppingBag } from "lucide-react";
+import { Sparkles, Store, LogOut, User, Users, Trophy, MessageCircle, Swords, Menu, Settings, Moon, Sun, Zap, ShoppingBag, Landmark } from "lucide-react";
 import { useState } from "react";
 import { useTheme } from "next-themes";
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 
 export const Navbar = () => {
   const { user, signOut } = useAuth();
@@ -17,6 +18,7 @@ export const Navbar = () => {
     { to: "/quests", icon: Zap, label: "Quests" },
     { to: "/shop", icon: Store, label: "Shop" },
     { to: "/marketplace", icon: ShoppingBag, label: "Marketplace" },
+    { to: "/bank", icon: Landmark, label: "Bank" },
     { to: "/community", icon: Users, label: "Community" },
     { to: "/leaderboard", icon: Trophy, label: "Leaderboard" },
     { to: "/chat", icon: MessageCircle, label: "Chat" },
@@ -30,7 +32,7 @@ export const Navbar = () => {
         <div className="flex items-center gap-4">
           <Link to="/" className="flex items-center gap-2 font-bold text-xl">
             <Sparkles className="w-6 h-6 text-primary" />
-            <span className="text-gradient hidden sm:inline">Moltmon</span>
+            <span className="text-gradient hidden sm:inline">Critter Club</span>
             <span className="text-gradient sm:hidden">CC</span>
           </Link>
           <a 
@@ -61,6 +63,9 @@ export const Navbar = () => {
                   </Button>
                 </Link>
               ))}
+              <div className="ml-2">
+                <WalletMultiButton style={{ height: '36px', lineHeight: '36px', padding: '0 16px', fontSize: '0.875rem', backgroundColor: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))', borderRadius: 'calc(var(--radius) - 2px)' }} />
+              </div>
               <Button 
                 variant="ghost" 
                 size="sm"
@@ -98,6 +103,9 @@ export const Navbar = () => {
                       </Button>
                     </Link>
                   ))}
+                  <div className="w-full">
+                    <WalletMultiButton style={{ width: '100%', justifyContent: 'center', height: '40px', backgroundColor: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))', borderRadius: 'calc(var(--radius) - 2px)' }} />
+                  </div>
                   <Button
                     variant="ghost"
                     className="w-full justify-start"

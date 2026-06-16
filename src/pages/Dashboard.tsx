@@ -98,22 +98,23 @@ const Dashboard = () => {
       <Navbar />
       <div className="flex-1 container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-4xl font-bold text-gradient mb-2">My Pets</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-3xl md:text-4xl font-bold text-gradient mb-2">My Pets</h1>
+            <p className="text-sm md:text-base text-muted-foreground">
               Welcome back, {profile?.username || "Trainer"}!
             </p>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 px-4 py-2 bg-accent/20 rounded-full">
-              <Coins className="w-5 h-5 text-accent" />
-              <span className="font-bold">{profile?.pet_points || 0} PetPoints</span>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <div className="flex items-center gap-2 px-4 py-2 bg-accent/20 rounded-full justify-center sm:justify-start">
+              <Coins className="w-5 h-5 text-accent flex-shrink-0" />
+              <span className="font-bold text-sm md:text-base">{profile?.pet_points || 0} PP</span>
             </div>
-            <Link to="/adopt">
-              <Button className="shadow-button">
+            <Link to="/adopt" className="w-full sm:w-auto">
+              <Button className="shadow-button w-full sm:w-auto">
                 <Plus className="w-4 h-4 mr-2" />
-                Adopt Pet
+                <span className="hidden sm:inline">Adopt Pet</span>
+                <span className="sm:hidden">Adopt</span>
               </Button>
             </Link>
           </div>
@@ -125,7 +126,7 @@ const Dashboard = () => {
             <div className="max-w-md mx-auto">
               <h3 className="text-2xl font-bold mb-4">No Pets Yet!</h3>
               <p className="text-muted-foreground mb-6">
-                Adopt your first pet to begin your adventure in Moltmon
+                Adopt your first pet to begin your adventure in Critter Club
               </p>
               <Link to="/adopt">
                 <Button size="lg" className="shadow-button">

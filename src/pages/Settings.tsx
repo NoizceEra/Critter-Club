@@ -59,7 +59,7 @@ const Settings = () => {
     }
 
     // Load saved theme from localStorage
-    const savedTheme = localStorage.getItem("Molt-theme");
+    const savedTheme = localStorage.getItem("critter-club-theme");
     if (savedTheme) {
       const themeIndex = parseInt(savedTheme);
       setSelectedTheme(themeIndex);
@@ -77,7 +77,7 @@ const Settings = () => {
   const handleThemeChange = (index: number) => {
     setSelectedTheme(index);
     applyTheme(themePresets[index]);
-    localStorage.setItem("Molt-theme", index.toString());
+    localStorage.setItem("critter-club-theme", index.toString());
     toast.success("Theme updated!");
   };
 

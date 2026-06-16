@@ -35,9 +35,11 @@ interface RealtimeBattleSyncProps {
   battleId: string;
   isAttacker: boolean;
   onBattleEnd: (winnerId: string | null) => void;
+  onOpponentTurn?: (turn: BattleTurn) => void;
+  onTurnChange?: (isMyTurn: boolean) => void;
 }
 
-export const RealtimeBattleSync = ({ battleId, isAttacker, onBattleEnd }: RealtimeBattleSyncProps) => {
+export const RealtimeBattleSync = ({ battleId, isAttacker, onBattleEnd, onOpponentTurn, onTurnChange }: RealtimeBattleSyncProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [battle, setBattle] = useState<Battle | null>(null);
@@ -91,6 +93,12 @@ export const RealtimeBattleSync = ({ battleId, isAttacker, onBattleEnd }: Realti
               description: `${newTurn.action_type} - Damage: ${newTurn.damage_dealt || 0}`,
             });
             setWaitingForOpponent(false);
+            if (onOpponentTurn) {
+              onOpponentTurn(newTurn);
+            }
+          }
+          if (onTurnChange) {
+            onTurnChange(isMyTurn);
           }
         }
       )
@@ -139,6 +147,12 @@ export const RealtimeBattleSync = ({ battleId, isAttacker, onBattleEnd }: Realti
   const myTurn = isAttacker 
     ? !lastTurn || lastTurn.actor_type === 'defender'
     : !lastTurn || lastTurn.actor_type === 'attacker';
+
+  useEffect(() => {
+    if (onTurnChange) {
+      onTurnChange(myTurn);
+    }
+  }, [myTurn, onTurnChange]);
 
   return (
     <Card className="border-primary/50">

@@ -116,12 +116,12 @@ const Marketplace = () => {
     // Fetch user points
     const { data: profileData } = await supabase
       .from("profiles")
-      .select("pet_points")
+      .select("pet_points, solana_balance")
       .eq("id", user!.id)
       .single();
 
     if (profileData) {
-      setUserPoints(profileData.pet_points);
+      setUserPoints(profileData.solana_balance ?? profileData.pet_points ?? 0);
     }
 
     setLoading(false);
@@ -258,7 +258,7 @@ const Marketplace = () => {
           <div className="flex items-center gap-2 bg-card p-4 rounded-lg border">
             <Coins className="w-5 h-5 text-primary" />
             <span className="text-xl font-semibold">{userPoints}</span>
-            <span className="text-sm text-muted-foreground">PetPoints</span>
+            <span className="text-sm text-muted-foreground">Tokens</span>
           </div>
         </div>
 
@@ -420,7 +420,7 @@ const Marketplace = () => {
                   <ShoppingCart className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
                   <p className="text-lg text-muted-foreground mb-2">You have no active listings</p>
                   <p className="text-sm text-muted-foreground">
-                    Visit your pet's detail page to list it for sale (50 PP listing fee)
+                    Visit your pet's detail page to list it for sale (50 Tokens listing fee)
                   </p>
                 </CardContent>
               </Card>

@@ -328,19 +328,20 @@ const PetDetail = () => {
           Back to Dashboard
         </Button>
 
-        <div className="grid lg:grid-cols-2 gap-8">
+        <div className="grid lg:grid-cols-2 gap-6 md:gap-8">
           {/* Pet Display */}
-          <Card className="p-8 gradient-card shadow-card">
+          <Card className="p-6 md:p-8 gradient-card shadow-card">
             <div className="text-center">
-              <div 
-                className="w-64 h-64 mx-auto mb-6 rounded-lg flex items-center justify-center"
+              <div
+                className="w-48 h-48 md:w-64 md:h-64 mx-auto mb-6 rounded-lg flex items-center justify-center"
                 style={{ backgroundColor: pet.color }}
               >
                 <img
                   src={petImages[pet.species]}
                   alt={pet.name}
-                  className="w-48 h-48 object-contain"
+                  className="w-32 h-32 md:w-48 md:h-48 object-contain"
                   style={{ filter: 'drop-shadow(0 0 20px rgba(0,0,0,0.3))' }}
+                  loading="lazy"
                 />
               </div>
               <h1 className="text-4xl font-bold mb-2">{pet.name}</h1>
@@ -390,38 +391,46 @@ const PetDetail = () => {
                 </TabsList>
 
                 <TabsContent value="actions" className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-3 md:gap-4">
                     <Button
                       onClick={() => handleAction("feed", "hunger", -20, 10)}
                       disabled={pet.hunger <= 20}
-                      className="h-20 flex-col gap-2"
+                      className="h-16 md:h-20 flex-col gap-1 md:gap-2 text-xs md:text-sm"
+                      aria-label="Feed pet (costs 10 PP)"
                     >
-                      <UtensilsCrossed className="w-6 h-6" />
-                      <span>Feed (10 PP)</span>
+                      <UtensilsCrossed className="w-5 md:w-6 h-5 md:h-6" />
+                      <span className="hidden sm:inline">Feed (10 PP)</span>
+                      <span className="sm:hidden">Feed</span>
                     </Button>
                     <Button
                       onClick={() => handleAction("play", "happiness", 15, 5)}
                       disabled={pet.energy <= 20}
-                      className="h-20 flex-col gap-2"
+                      className="h-16 md:h-20 flex-col gap-1 md:gap-2 text-xs md:text-sm"
+                      aria-label="Play with pet (costs 5 PP)"
                     >
-                      <Gamepad2 className="w-6 h-6" />
-                      <span>Play (5 PP)</span>
+                      <Gamepad2 className="w-5 md:w-6 h-5 md:h-6" />
+                      <span className="hidden sm:inline">Play (5 PP)</span>
+                      <span className="sm:hidden">Play</span>
                     </Button>
                     <Button
                       onClick={() => handleAction("groom", "health", 10, 8)}
                       disabled={pet.health >= 90}
-                      className="h-20 flex-col gap-2"
+                      className="h-16 md:h-20 flex-col gap-1 md:gap-2 text-xs md:text-sm"
+                      aria-label="Groom pet (costs 8 PP)"
                     >
-                      <Sparkles className="w-6 h-6" />
-                      <span>Groom (8 PP)</span>
+                      <Sparkles className="w-5 md:w-6 h-5 md:h-6" />
+                      <span className="hidden sm:inline">Groom (8 PP)</span>
+                      <span className="sm:hidden">Groom</span>
                     </Button>
                     <Button
                       onClick={() => handleAction("rest", "energy", 25, 0)}
                       disabled={pet.energy >= 75}
-                      className="h-20 flex-col gap-2"
+                      className="h-16 md:h-20 flex-col gap-1 md:gap-2 text-xs md:text-sm"
+                      aria-label="Let pet rest (free)"
                     >
-                      <Moon className="w-6 h-6" />
-                      <span>Rest (Free)</span>
+                      <Moon className="w-5 md:w-6 h-5 md:h-6" />
+                      <span className="hidden sm:inline">Rest (Free)</span>
+                      <span className="sm:hidden">Rest</span>
                     </Button>
                   </div>
                   <p className="text-xs text-muted-foreground text-center">

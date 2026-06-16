@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "./AuthProvider";
+import { WalletAuthButton } from "./WalletAuthButton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -72,6 +73,18 @@ export const SignUpForm = ({ onToggle }: { onToggle: () => void }) => {
           <Button type="submit" className="w-full shadow-button" disabled={loading}>
             {loading ? "Creating account..." : "Sign Up"}
           </Button>
+
+          <div className="relative my-1">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">or</span>
+            </div>
+          </div>
+
+          <WalletAuthButton />
+
           <p className="text-center text-sm text-muted-foreground">
             Already have an account?{" "}
             <button

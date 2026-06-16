@@ -434,6 +434,7 @@ export type Database = {
           pet_points: number | null
           updated_at: string | null
           username: string
+          wallet_address: string | null
         }
         Insert: {
           created_at?: string | null
@@ -442,6 +443,7 @@ export type Database = {
           pet_points?: number | null
           updated_at?: string | null
           username: string
+          wallet_address?: string | null
         }
         Update: {
           created_at?: string | null
@@ -450,6 +452,7 @@ export type Database = {
           pet_points?: number | null
           updated_at?: string | null
           username?: string
+          wallet_address?: string | null
         }
         Relationships: []
       }

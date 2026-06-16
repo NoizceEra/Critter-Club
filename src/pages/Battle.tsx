@@ -6,8 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
 import { Sword, Shield, Zap, Cloud, Flame, Droplet, Mountain, Wind, Sparkles, MoveRight, Package, AlertTriangle, RefreshCw } from "lucide-react";
+import { toast } from "sonner";
 import { Navbar } from "@/components/ui/navbar";
 import { Footer } from "@/components/ui/footer";
 import { trackQuestProgress } from "@/lib/questTracker";
@@ -72,7 +72,6 @@ interface BattlePet extends Pet {
 
 const Battle = () => {
   const { user } = useAuth();
-  const { toast } = useToast();
   const [myPets, setMyPets] = useState<Pet[]>([]);
   const [selectedTeam, setSelectedTeam] = useState<BattlePet[]>([]);
   const [activePetIndex, setActivePetIndex] = useState(0);
@@ -92,7 +91,8 @@ const Battle = () => {
   const [totalAttackerDamage, setTotalAttackerDamage] = useState(0);
   const [totalDefenderDamage, setTotalDefenderDamage] = useState(0);
   const [isPvPBattle, setIsPvPBattle] = useState(false);
-  const [isAttacker, setIsAttacker] = useState(false);
+  const [isAttacker, setIsAttacker] = useState(true);
+  const [isMyTurn, setIsMyTurn] = useState<boolean>(true);
 
   const activePet = selectedTeam[activePetIndex];
   const activeOpponent = opponentTeam[activeOpponentIndex];
@@ -582,7 +582,9 @@ const Battle = () => {
     // Save battle turn
     saveBattleTurn('attacker', 'defend', 0);
 
-    setTimeout(() => opponentTurn(), 1000);
+    if (!isPvPBattle) {
+      setTimeout(() => opponentTurn(), 1000);
+    }
   };
 
   const dodge = () => {
@@ -597,7 +599,9 @@ const Battle = () => {
     // Save battle turn
     saveBattleTurn('attacker', 'dodge', 0);
 
-    setTimeout(() => opponentTurn(), 1000);
+    if (!isPvPBattle) {
+      setTimeout(() => opponentTurn(), 1000);
+    }
   };
 
   const specialAttack = () => {
@@ -793,7 +797,9 @@ const Battle = () => {
       }
     }
 
-    setTimeout(() => opponentTurn(), 1500);
+    if (!isPvPBattle) {
+      setTimeout(() => opponentTurn(), 1500);
+    }
   };
 
   const opponentTurn = () => {
@@ -937,6 +943,39 @@ const Battle = () => {
         endBattle(true);
       } else {
         setActiveOpponentIndex(nextOpponent);
+      }
+    }
+  };
+
+  const handleOpponentRealtimeTurn = (turn: any) => {
+    if (!activePet || !activeOpponent) return;
+
+    const damage = turn.damage_dealt || 0;
+    
+    // Track defender damage
+    setTotalDefenderDamage(prev => prev + damage);
+    
+    const updatedTeam = [...selectedTeam];
+    let newPlayerHealth = Math.max(0, activePet.currentHealth - damage);
+    
+    let messages = [];
+    messages.push(`${activeOpponent.name} used ${turn.skill_used || turn.action_type}! Dealt ${damage} damage!`);
+    
+    updatedTeam[activePetIndex] = { ...activePet, currentHealth: newPlayerHealth };
+    setBattleLog((prev) => [...prev, ...messages]);
+    setSelectedTeam(updatedTeam);
+
+    if (newPlayerHealth <= 0) {
+      updatedTeam[activePetIndex].isFainted = true;
+      setSelectedTeam(updatedTeam);
+      setBattleLog((prev) => [...prev, `${activePet.name} fainted!`]);
+      
+      const nextPet = updatedTeam.findIndex(p => !p.isFainted);
+      if (nextPet === -1) {
+        endBattle(false);
+      } else {
+        setActivePetIndex(nextPet);
+        setBattleLog((prev) => [...prev, `Go, ${updatedTeam[nextPet].name}!`]);
       }
     }
   };
@@ -1223,6 +1262,8 @@ const Battle = () => {
                   <RealtimeBattleSync
                     battleId={currentBattleId}
                     isAttacker={isAttacker}
+                    onTurnChange={setIsMyTurn}
+                    onOpponentTurn={handleOpponentRealtimeTurn}
                     onBattleEnd={(winnerId) => {
                       setInBattle(false);
                       setIsPvPBattle(false);
@@ -1251,42 +1292,45 @@ const Battle = () => {
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Team Display */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <h4 className="font-semibold text-center">Your Team</h4>
-                    <div className="flex gap-2 justify-center">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                  <div className="space-y-3">
+                    <h4 className="font-semibold text-center text-sm md:text-base">Your Team</h4>
+                    <div className="flex gap-2 justify-center flex-wrap">
                       {selectedTeam.map((pet, idx) => (
                         <button
                           key={pet.id}
                           onClick={() => switchPet(idx)}
                           disabled={pet.isFainted || idx === activePetIndex}
-                          className={`w-12 h-12 rounded-full border-2 flex items-center justify-center text-xs font-bold transition-all ${
+                          aria-label={`Switch to ${pet.name}`}
+                          className={`w-14 h-14 md:w-16 md:h-16 rounded-full border-2 flex items-center justify-center text-sm md:text-base font-bold transition-all ${
                             idx === activePetIndex
                               ? "border-primary bg-primary text-primary-foreground scale-110"
                               : pet.isFainted
                               ? "border-muted bg-muted opacity-50"
                               : "border-border hover:border-primary"
                           }`}
+                          title={`${pet.name} (${pet.isFainted ? 'Fainted' : 'Active'})`}
                         >
                           {pet.name.charAt(0)}
                         </button>
                       ))}
                     </div>
                   </div>
-                  
-                  <div className="space-y-2">
-                    <h4 className="font-semibold text-center">Opponents</h4>
-                    <div className="flex gap-2 justify-center">
+
+                  <div className="space-y-3">
+                    <h4 className="font-semibold text-center text-sm md:text-base">Opponents</h4>
+                    <div className="flex gap-2 justify-center flex-wrap">
                       {opponentTeam.map((pet, idx) => (
                         <div
                           key={pet.id}
-                          className={`w-12 h-12 rounded-full border-2 flex items-center justify-center text-xs font-bold ${
+                          className={`w-14 h-14 md:w-16 md:h-16 rounded-full border-2 flex items-center justify-center text-sm md:text-base font-bold transition-all ${
                             idx === activeOpponentIndex
                               ? "border-destructive bg-destructive text-destructive-foreground scale-110"
                               : pet.isFainted
                               ? "border-muted bg-muted opacity-50"
                               : "border-border"
                           }`}
+                          title={`${pet.name} (${pet.isFainted ? 'Fainted' : 'Active'})`}
                         >
                           {pet.name.charAt(0)}
                         </div>
@@ -1296,12 +1340,13 @@ const Battle = () => {
                 </div>
 
                 {/* Active Pets */}
-                <div className="grid grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
                   <div className="text-center space-y-2">
                     <img
                       src={activePet ? getPetImage(activePet.species) : petFluff}
-                      alt={activePet?.name}
-                      className="w-32 h-32 mx-auto"
+                      alt={activePet?.name || "Your pet"}
+                      className="w-24 h-24 md:w-32 md:h-32 mx-auto"
+                      loading="lazy"
                     />
                     <h3 className="font-bold">{activePet?.name}</h3>
                     <p className="text-sm text-muted-foreground">Level {activePet?.level}</p>
@@ -1335,8 +1380,9 @@ const Battle = () => {
                   <div className="text-center space-y-2">
                     <img
                       src={activeOpponent ? getPetImage(activeOpponent.species) : petFluff}
-                      alt={activeOpponent?.name}
-                      className="w-32 h-32 mx-auto"
+                      alt={activeOpponent?.name || "Opponent pet"}
+                      className="w-24 h-24 md:w-32 md:h-32 mx-auto"
+                      loading="lazy"
                     />
                     <h3 className="font-bold">{activeOpponent?.name}</h3>
                     <p className="text-sm text-muted-foreground">Level {activeOpponent?.level}</p>
@@ -1389,46 +1435,57 @@ const Battle = () => {
                 <div className="space-y-4">
                   <h4 className="font-semibold text-center">Actions</h4>
                   
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-2 md:gap-3">
                     <Button
                       onClick={() => attack()}
-                      disabled={!activePet || !activeOpponent || activePet.currentHealth <= 0 || activeOpponent.currentHealth <= 0}
+                      disabled={!activePet || !activeOpponent || activePet.currentHealth <= 0 || activeOpponent.currentHealth <= 0 || (isPvPBattle && !isMyTurn)}
                       variant="default"
                       size="lg"
+                      className="h-14 md:h-16 text-sm md:text-base"
+                      aria-label="Attack opponent"
                     >
-                      <Sword className="mr-2 h-5 w-5" />
-                      Attack
+                      <Sword className="mr-1 md:mr-2 h-4 md:h-5 w-4 md:w-5" />
+                      <span className="hidden sm:inline">Attack</span>
+                      <span className="sm:hidden">ATK</span>
                     </Button>
 
                     <Button
                       onClick={defend}
-                      disabled={!activePet || !activeOpponent || activePet.currentHealth <= 0 || activeOpponent.currentHealth <= 0}
+                      disabled={!activePet || !activeOpponent || activePet.currentHealth <= 0 || activeOpponent.currentHealth <= 0 || (isPvPBattle && !isMyTurn)}
                       variant="secondary"
                       size="lg"
+                      className="h-14 md:h-16 text-sm md:text-base"
+                      aria-label="Defend against attacks"
                     >
-                      <Shield className="mr-2 h-5 w-5" />
-                      Defend
+                      <Shield className="mr-1 md:mr-2 h-4 md:h-5 w-4 md:w-5" />
+                      <span className="hidden sm:inline">Defend</span>
+                      <span className="sm:hidden">DEF</span>
                     </Button>
 
                     <Button
                       onClick={dodge}
-                      disabled={!activePet || !activeOpponent || activePet.currentHealth <= 0 || activeOpponent.currentHealth <= 0 || dodgeCooldown > 0}
+                      disabled={!activePet || !activeOpponent || activePet.currentHealth <= 0 || activeOpponent.currentHealth <= 0 || dodgeCooldown > 0 || (isPvPBattle && !isMyTurn)}
                       variant="secondary"
                       size="lg"
+                      className="h-14 md:h-16 text-sm md:text-base"
+                      aria-label={`Dodge attacks${dodgeCooldown > 0 ? ` (${dodgeCooldown} turn cooldown)` : ''}`}
                     >
-                      <MoveRight className="mr-2 h-5 w-5" />
-                      Dodge {dodgeCooldown > 0 && `(${dodgeCooldown})`}
+                      <MoveRight className="mr-1 md:mr-2 h-4 md:h-5 w-4 md:w-5" />
+                      <span className="hidden sm:inline">Dodge {dodgeCooldown > 0 && `(${dodgeCooldown})`}</span>
+                      <span className="sm:hidden">DOD{dodgeCooldown > 0 && `(${dodgeCooldown})`}</span>
                     </Button>
 
                     <Button
                       onClick={specialAttack}
-                      disabled={!activePet || !activeOpponent || activePet.currentHealth <= 0 || activeOpponent.currentHealth <= 0 || specialCooldown > 0}
+                      disabled={!activePet || !activeOpponent || activePet.currentHealth <= 0 || activeOpponent.currentHealth <= 0 || specialCooldown > 0 || (isPvPBattle && !isMyTurn)}
                       variant="default"
                       size="lg"
-                      className="bg-gradient-to-r from-primary to-secondary"
+                      className="bg-gradient-to-r from-primary to-secondary h-14 md:h-16 text-sm md:text-base"
+                      aria-label={`Special attack${specialCooldown > 0 ? ` (${specialCooldown} turn cooldown)` : ''}`}
                     >
-                      <Sparkles className="mr-2 h-5 w-5" />
-                      Special {specialCooldown > 0 && `(${specialCooldown})`}
+                      <Sparkles className="mr-1 md:mr-2 h-4 md:h-5 w-4 md:w-5" />
+                      <span className="hidden sm:inline">Special {specialCooldown > 0 && `(${specialCooldown})`}</span>
+                      <span className="sm:hidden">SP{specialCooldown > 0 && `(${specialCooldown})`}</span>
                     </Button>
                   </div>
 
@@ -1440,7 +1497,7 @@ const Battle = () => {
                           <Button
                             key={index}
                             onClick={() => attack(skill)}
-                            disabled={!activePet || !activeOpponent || activePet.currentHealth <= 0 || activeOpponent.currentHealth <= 0}
+                            disabled={!activePet || !activeOpponent || activePet.currentHealth <= 0 || activeOpponent.currentHealth <= 0 || (isPvPBattle && !isMyTurn)}
                             variant="outline"
                             size="sm"
                           >

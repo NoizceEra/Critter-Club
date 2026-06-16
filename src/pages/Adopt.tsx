@@ -73,12 +73,12 @@ const Adopt = () => {
       if (error) throw error;
 
       // Track quest progress for pet collection
-      const { data: petCount } = await supabase
+      const { data: pets, count } = await supabase
         .from("pets")
         .select("id", { count: 'exact' })
         .eq("owner_id", user.id);
 
-      if (petCount && petCount.length >= 3) {
+      if (count && count >= 3) {
         await trackQuestProgress(user.id, 'challenge', 1);
       }
 
@@ -112,27 +112,37 @@ const Adopt = () => {
             {/* Species Selection */}
             <div className="space-y-4">
               <Label className="text-lg font-bold">Select a Species</Label>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
                 {species.map((spec) => (
                   <Card
                     key={spec.id}
-                    className={`p-4 cursor-pointer transition-smooth hover:shadow-lg ${
+                    className={`p-3 md:p-4 cursor-pointer transition-smooth hover:shadow-lg ${
                       selectedSpecies === spec.id
                         ? "ring-2 ring-primary shadow-button"
                         : ""
                     }`}
                     onClick={() => setSelectedSpecies(spec.id)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        setSelectedSpecies(spec.id);
+                      }
+                    }}
+                    aria-pressed={selectedSpecies === spec.id}
+                    aria-label={`Select ${spec.display_name} (${spec.element} element, ${spec.rarity} rarity)`}
                   >
                     <img
                       src={spec.image_url || imageMap[spec.id]}
                       alt={spec.display_name}
-                      className="w-full h-32 object-contain mb-2"
+                      className="w-full h-24 md:h-32 object-contain mb-2"
+                      loading="lazy"
                     />
-                    <h3 className="font-bold text-center mb-1">{spec.display_name}</h3>
+                    <h3 className="font-bold text-center mb-1 text-sm md:text-base">{spec.display_name}</h3>
                     <p className="text-xs text-primary/80 text-center font-semibold mb-1">
-                      {spec.element.charAt(0).toUpperCase() + spec.element.slice(1)} Element
+                      {spec.element.charAt(0).toUpperCase() + spec.element.slice(1)}
                     </p>
-                    <p className="text-xs text-muted-foreground text-center">
+                    <p className="text-xs text-muted-foreground text-center line-clamp-2">
                       {spec.description}
                     </p>
                     {spec.rarity !== 'common' && (

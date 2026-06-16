@@ -117,19 +117,20 @@ Deno.serve(async (req) => {
     const won = winnerId === user.id
     const userPetLevel = battle.attacker_id === user.id ? battle.attacker_pet.level : battle.defender_pet.level
     
-    // Team size calculation based on damage dealt (rough approximation)
-    const teamSize = Math.max(1, Math.floor(attackerDamageDealt / 100) || 1)
-    
-    let rewards = won ? (50 + userPetLevel * 10) * teamSize : 10
-    const experience = won ? (30 + userPetLevel * 5) * teamSize : 5
+    // Base PvP win reward: 20 Tokens
+    let tokenRewards = won ? 20 : 0
+    const experience = won ? 30 + userPetLevel * 5 : 5
 
-    // Add wager pot to winner's rewards (they get double their wager)
+    // Add wager pot to winner's rewards (with 2% house cut)
     if (wagerAmount > 0 && won) {
-      rewards += (wagerAmount * 2)
-      console.log('Winner receives wager pot:', wagerAmount * 2)
+      const totalPot = wagerAmount * 2
+      const houseCut = Math.floor(totalPot * 0.02)
+      const winnerTake = totalPot - houseCut
+      tokenRewards += winnerTake
+      console.log('Winner receives wager pot after 2% cut:', winnerTake)
     }
 
-    console.log('Calculated rewards:', { rewards, experience, won, userPetLevel, teamSize, wagerAmount })
+    console.log('Calculated rewards:', { tokenRewards, experience, won, userPetLevel, wagerAmount })
 
     // Update battle record
     const { error: battleUpdateError } = await supabase
@@ -138,7 +139,7 @@ Deno.serve(async (req) => {
         status: 'completed',
         completed_at: new Date().toISOString(),
         winner_id: winnerId,
-        rewards_petpoints: rewards,
+        rewards_petpoints: tokenRewards, -- Keep using the column for logs, but it's Tokens now
         rewards_experience: experience,
         attacker_damage_dealt: attackerDamageDealt,
         defender_damage_dealt: defenderDamageDealt
@@ -153,10 +154,10 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Update user profile with rewards
+    // Update user profile with rewards (Solana Balance)
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('pet_points')
+      .select('solana_balance')
       .eq('id', user.id)
       .single()
 
@@ -168,9 +169,10 @@ Deno.serve(async (req) => {
       })
     }
 
+    const currentBalance = profile.solana_balance || 0
     const { error: profileUpdateError } = await supabase
       .from('profiles')
-      .update({ pet_points: profile.pet_points + rewards })
+      .update({ solana_balance: currentBalance + tokenRewards })
       .eq('id', user.id)
 
     if (profileUpdateError) {
@@ -206,7 +208,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true, 
-        rewards, 
+        rewards: tokenRewards, 
         experience,
         won 
       }),
