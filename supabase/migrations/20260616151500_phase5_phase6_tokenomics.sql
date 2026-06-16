@@ -10,12 +10,12 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-  v_current_status quest_status;
+  v_current_status TEXT;
   v_result JSON;
   v_fixed_reward INTEGER := 10; -- Phase 6 Fixed Algorithmic Reward
 BEGIN
   -- Lock the quest progress row to prevent race conditions
-  SELECT status INTO v_current_status
+  SELECT status::TEXT INTO v_current_status
   FROM user_quest_progress
   WHERE id = p_quest_progress_id
     AND user_id = p_user_id

@@ -23,7 +23,9 @@ export async function deriveWalletCredentials(
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('');
 
-  const email = `wallet_${publicKey.toBase58()}@critterclub.sol`;
+  const pubkeyStr = publicKey.toBase58();
+  const shortKey = `${pubkeyStr.slice(0, 6)}${pubkeyStr.slice(-6)}`;
+  const email = `w_${shortKey}@critterclub.sol`;
   return { email, password };
 }
 

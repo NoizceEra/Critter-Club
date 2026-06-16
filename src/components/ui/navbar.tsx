@@ -36,7 +36,7 @@ export const Navbar = () => {
             <span className="text-gradient sm:hidden">CC</span>
           </Link>
           <a 
-            href="https://x.com/MoltClub_Fun" 
+            href="https://x.com/CritterClub_Fun" 
             target="_blank" 
             rel="noopener noreferrer"
             className="text-muted-foreground hover:text-primary transition-colors"

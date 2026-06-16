@@ -68,7 +68,6 @@ export const WalletAuthButton = () => {
             id: data.user.id,
             username: username.trim(),
             pet_points: 100,
-            solana_balance: 100, // 100 Token Welcome Bonus
             wallet_address: publicKey.toBase58(),
           },
         ]);
